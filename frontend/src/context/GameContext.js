@@ -241,14 +241,23 @@ export function GameProvider({ children }) {
       }
       
       localStorage.setItem('tycoonGame', JSON.stringify(saveData));
-      console.log('✅ Game saved successfully at', new Date().toLocaleTimeString());
+      
+      // Show notification for manual saves only
+      if (gameState.money !== state.money || gameState.level !== state.level) {
+        console.log('💾 Game auto-saved at', new Date().toLocaleTimeString());
+      }
       
     } catch (error) {
       console.error('❌ Failed to save game:', error);
+      toast({
+        title: "Save Failed!",
+        description: "Could not save your progress. Please try again.",
+        variant: "destructive",
+      });
       // Try to clear corrupted data
       localStorage.removeItem('tycoonGame');
     }
-  }, []);
+  }, [state.money, state.level]);
   
   // Enhanced load function with data validation
   const loadGame = useCallback(() => {
