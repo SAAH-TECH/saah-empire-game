@@ -29,6 +29,17 @@ const GameScreen = () => {
   const [floatingNumbers, setFloatingNumbers] = useState([]);
   const [showSaveIndicator, setShowSaveIndicator] = useState(false);
   
+  // Show save indicator when game saves
+  useEffect(() => {
+    if (isLoaded) {
+      setShowSaveIndicator(true);
+      const timer = setTimeout(() => {
+        setShowSaveIndicator(false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.money, state.level, isLoaded]); // Show when important values change
+  
   // Show loading screen until game is loaded
   if (!isLoaded) {
     return (
@@ -41,15 +52,6 @@ const GameScreen = () => {
       </div>
     );
   }
-  
-  // Show save indicator when game saves
-  useEffect(() => {
-    setShowSaveIndicator(true);
-    const timer = setTimeout(() => {
-      setShowSaveIndicator(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, [state.money, state.level]); // Show when important values change
   
   const handleTap = () => {
     dispatch({ type: 'TAP' });
