@@ -6,6 +6,17 @@ import { Progress } from './ui/progress';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import { 
   Coins, 
   TrendingUp, 
   Users, 
@@ -15,7 +26,8 @@ import {
   Zap,
   Star,
   Target,
-  Clock
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import ShopComponent from './ShopComponent';
 import EmployeeComponent from './EmployeeComponent';
