@@ -214,27 +214,133 @@ function gameReducer(state, action) {
 
 export function GameProvider({ children }) {
   const [state, dispatch] = useReducer(gameReducer, initialState);
+  const [isLoaded, setIsLoaded] = useState(false);
   
-  // Auto-save game state
+  // Enhanced save function with validation
+  const saveGame = useCallback((gameState) => {
+    try {
+      const saveData = { ...gameState };
+      // Remove UI-only state from save data
+      delete saveData.showDailyReward;
+      delete saveData.showAchievement;
+      delete saveData.activeTab;
+      
+      // Add save metadata
+      saveData.saveVersion = '1.0';
+      saveData.lastSaved = Date.now();
+      
+      // Validate critical data before saving
+      if (typeof saveData.money !== 'number' || saveData.money < 0) {
+        console.warn('Invalid money value, fixing...');
+        saveData.money = 0;
+      }
+      
+      if (typeof saveData.level !== 'number' || saveData.level < 1) {
+        console.warn('Invalid level value, fixing...');
+        saveData.level = 1;
+      }
+      
+      localStorage.setItem('tycoonGame', JSON.stringify(saveData));
+      console.log('✅ Game saved successfully at', new Date().toLocaleTimeString());
+      
+    } catch (error) {
+      console.error('❌ Failed to save game:', error);
+      // Try to clear corrupted data
+      localStorage.removeItem('tycoonGame');
+    }
+  }, []);
+  
+  // Enhanced load function with data validation
+  const loadGame = useCallback(() => {
+    try {
+      const savedGame = localStorage.getItem('tycoonGame');
+      if (!savedGame) {
+        console.log('🎮 No saved game found, starting fresh');
+        setIsLoaded(true);
+        return;
+      }
+      
+      const parsedGame = JSON.parse(savedGame);
+      
+      // Validate save data structure
+      if (!parsedGame || typeof parsedGame !== 'object') {
+        throw new Error('Invalid save data format');
+      }
+      
+      // Data migration and validation
+      const validatedData = {
+        ...initialState,
+        ...parsedGame,
+        // Ensure critical fields are valid
+        money: typeof parsedGame.money === 'number' && parsedGame.money >= 0 ? parsedGame.money : 0,
+        level: typeof parsedGame.level === 'number' && parsedGame.level >= 1 ? parsedGame.level : 1,
+        moneyPerTap: typeof parsedGame.moneyPerTap === 'number' && parsedGame.moneyPerTap >= 1 ? parsedGame.moneyPerTap : 1,
+        moneyPerSecond: typeof parsedGame.moneyPerSecond === 'number' && parsedGame.moneyPerSecond >= 0 ? parsedGame.moneyPerSecond : 0,
+        // Reset UI state
+        showDailyReward: false,
+        showAchievement: null,
+        activeTab: 'main',
+      };
+      
+      // Validate daily rewards
+      if (parsedGame.dailyRewards) {
+        const today = new Date().toDateString();
+        const lastClaim = parsedGame.dailyRewards.lastClaim;
+        validatedData.dailyRewards = {
+          ...parsedGame.dailyRewards,
+          canClaim: !lastClaim || lastClaim !== today,
+        };
+      }
+      
+      dispatch({ type: 'LOAD_GAME', data: validatedData });
+      console.log('✅ Game loaded successfully from', new Date(parsedGame.lastSaved || Date.now()).toLocaleTimeString());
+      
+    } catch (error) {
+      console.error('❌ Failed to load saved game:', error);
+      console.log('🔄 Starting with fresh game data');
+      // Clear corrupted save data
+      localStorage.removeItem('tycoonGame');
+    } finally {
+      setIsLoaded(true);
+    }
+  }, []);
+  
+  // Auto-save game state on every update (debounced)
   useEffect(() => {
-    const saveData = { ...state };
-    delete saveData.showDailyReward;
-    delete saveData.showAchievement;
-    localStorage.setItem('tycoonGame', JSON.stringify(saveData));
-  }, [state]);
+    if (!isLoaded) return; // Don't save until initial load is complete
+    
+    const timeoutId = setTimeout(() => {
+      saveGame(state);
+    }, 500); // Debounce saves by 500ms
+    
+    return () => clearTimeout(timeoutId);
+  }, [state, isLoaded, saveGame]);
   
   // Load game state on mount
   useEffect(() => {
-    const savedGame = localStorage.getItem('tycoonGame');
-    if (savedGame) {
-      try {
-        const parsedGame = JSON.parse(savedGame);
-        dispatch({ type: 'LOAD_GAME', data: parsedGame });
-      } catch (error) {
-        console.error('Failed to load saved game:', error);
+    loadGame();
+  }, [loadGame]);
+  
+  // Save game when page is about to unload
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveGame(state);
+    };
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        saveGame(state);
       }
-    }
-  }, []);
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [state, saveGame]);
   
   // Passive income timer
   useEffect(() => {
@@ -248,19 +354,55 @@ export function GameProvider({ children }) {
   
   // Check daily reward availability
   useEffect(() => {
+    if (!isLoaded) return;
+    
     const today = new Date().toDateString();
     const lastClaim = state.dailyRewards.lastClaim;
     const canClaim = !lastClaim || lastClaim !== today;
     
     if (canClaim && !state.showDailyReward) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         dispatch({ type: 'SHOW_DAILY_REWARD', show: true });
       }, 3000);
+      return () => clearTimeout(timer);
     }
-  }, [state.dailyRewards.lastClaim, state.showDailyReward]);
+  }, [state.dailyRewards.lastClaim, state.showDailyReward, isLoaded]);
+  
+  // Manual save/load functions for debugging
+  const manualSave = useCallback(() => {
+    saveGame(state);
+    toast({
+      title: "Game Saved!",
+      description: "Your progress has been saved successfully.",
+    });
+  }, [state, saveGame]);
+  
+  const manualLoad = useCallback(() => {
+    loadGame();
+    toast({
+      title: "Game Loaded!",
+      description: "Your saved progress has been loaded.",
+    });
+  }, [loadGame]);
+  
+  const resetGame = useCallback(() => {
+    localStorage.removeItem('tycoonGame');
+    dispatch({ type: 'LOAD_GAME', data: initialState });
+    toast({
+      title: "Game Reset!",
+      description: "Your progress has been reset to the beginning.",
+    });
+  }, []);
   
   return (
-    <GameContext.Provider value={{ state, dispatch }}>
+    <GameContext.Provider value={{ 
+      state, 
+      dispatch, 
+      isLoaded,
+      manualSave,
+      manualLoad,
+      resetGame
+    }}>
       {children}
     </GameContext.Provider>
   );
