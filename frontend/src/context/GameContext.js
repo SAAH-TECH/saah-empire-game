@@ -395,12 +395,30 @@ export function GameProvider({ children }) {
   }, [loadGame]);
   
   const resetGame = useCallback(() => {
-    localStorage.removeItem('tycoonGame');
-    dispatch({ type: 'LOAD_GAME', data: initialState });
-    toast({
-      title: "Game Reset!",
-      description: "Your progress has been reset to the beginning.",
-    });
+    try {
+      // Clear localStorage
+      localStorage.removeItem('tycoonGame');
+      
+      // Reset to initial state
+      dispatch({ type: 'LOAD_GAME', data: initialState });
+      
+      // Show success message
+      toast({
+        title: "🔄 Game Reset Complete!",
+        description: "Welcome back to your fresh business empire. Good luck building your fortune!",
+        className: "bg-green-600 text-white",
+      });
+      
+      console.log('🔄 Game reset successfully - all progress cleared');
+      
+    } catch (error) {
+      console.error('❌ Failed to reset game:', error);
+      toast({
+        title: "Reset Failed!",
+        description: "Could not reset your progress. Please try again.",
+        variant: "destructive",
+      });
+    }
   }, []);
   
   return (
