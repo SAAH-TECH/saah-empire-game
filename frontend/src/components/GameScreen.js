@@ -102,6 +102,14 @@ const GameScreen = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Save Indicator */}
+            {showSaveIndicator && (
+              <div className="flex items-center space-x-2 bg-green-500/20 px-3 py-1 rounded-full">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-xs text-green-400">Saved</span>
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
