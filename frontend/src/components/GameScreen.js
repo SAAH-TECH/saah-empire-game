@@ -339,6 +339,42 @@ const GameScreen = () => {
           
           <TabsContent value="stats">
             <StatsComponent />
+            
+            {/* Debug Panel */}
+            <Card className="mt-6 bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Game Controls</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Button
+                    onClick={manualSave}
+                    className="bg-green-600 hover:bg-green-500"
+                  >
+                    💾 Manual Save
+                  </Button>
+                  <Button
+                    onClick={manualLoad}
+                    className="bg-blue-600 hover:bg-blue-500"
+                  >
+                    📁 Reload Game
+                  </Button>
+                  <Button
+                    onClick={resetGame}
+                    className="bg-red-600 hover:bg-red-500"
+                  >
+                    🔄 Reset Progress
+                  </Button>
+                </div>
+                <div className="mt-4 text-sm text-gray-400 text-center">
+                  <p>Your progress automatically saves every 0.5 seconds</p>
+                  <p>Game also saves when you switch tabs or close the browser</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
