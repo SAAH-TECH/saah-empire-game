@@ -349,6 +349,71 @@ const GameScreen = () => {
                 </CardContent>
               </Card>
             </div>
+            
+            {/* Reset Progress Section */}
+            <Card className="mt-6 bg-gradient-to-r from-red-900/50 to-orange-900/50 backdrop-blur-sm border-red-500/30">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-red-400">
+                  <AlertTriangle className="w-5 h-5" />
+                  <span>Danger Zone</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <p className="text-gray-300 mb-4">
+                    Want to start your empire from scratch? This will permanently delete all your progress.
+                  </p>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button className="bg-red-600 hover:bg-red-500 text-white">
+                        <AlertTriangle className="w-4 h-4 mr-2" />
+                        Reset All Progress
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-900 border-gray-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center space-x-2 text-red-400">
+                          <AlertTriangle className="w-6 h-6" />
+                          <span>Are you absolutely sure?</span>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-300">
+                          This action cannot be undone. This will permanently delete all your progress including:
+                          <br />
+                          <br />
+                          <div className="bg-gray-800 p-3 rounded-lg text-sm">
+                            • <strong>Money:</strong> {formatMoney(state.money)}
+                            <br />
+                            • <strong>Level:</strong> {state.level}
+                            <br />
+                            • <strong>Upgrades:</strong> {state.stats.upgradesPurchased} purchased
+                            <br />
+                            • <strong>Employees:</strong> {state.stats.employeesHired} hired
+                            <br />
+                            • <strong>Play Time:</strong> {formatTime(gameTime)}
+                            <br />
+                            • <strong>Achievements:</strong> {Object.values(state.achievements).filter(Boolean).length} unlocked
+                          </div>
+                          <br />
+                          Type "RESET" in your mind if you're sure you want to start over.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={resetGame}
+                          className="bg-red-600 hover:bg-red-500"
+                        >
+                          Yes, Reset Everything
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="stats">
