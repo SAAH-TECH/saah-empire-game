@@ -354,7 +354,7 @@ const GameScreen = () => {
           <TabsContent value="stats">
             <StatsComponent />
             
-            {/* Debug Panel */}
+            {/* Game Controls */}
             <Card className="mt-6 bg-gray-800/50 backdrop-blur-sm border-gray-700">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
@@ -376,13 +376,56 @@ const GameScreen = () => {
                   >
                     📁 Reload Game
                   </Button>
-                  <Button
-                    onClick={resetGame}
-                    className="bg-red-600 hover:bg-red-500"
-                  >
-                    🔄 Reset Progress
-                  </Button>
+                  
+                  {/* Reset Progress with Confirmation */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button className="bg-red-600 hover:bg-red-500">
+                        🔄 Reset Progress
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-gray-900 border-gray-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center space-x-2 text-red-400">
+                          <AlertTriangle className="w-6 h-6" />
+                          <span>Reset All Progress?</span>
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-gray-300">
+                          This action cannot be undone. This will permanently delete all your progress including:
+                          <br />
+                          <br />
+                          <div className="bg-gray-800 p-3 rounded-lg text-sm">
+                            • <strong>Money:</strong> {formatMoney(state.money)}
+                            <br />
+                            • <strong>Level:</strong> {state.level}
+                            <br />
+                            • <strong>Upgrades:</strong> {state.stats.upgradesPurchased} purchased
+                            <br />
+                            • <strong>Employees:</strong> {state.stats.employeesHired} hired
+                            <br />
+                            • <strong>Play Time:</strong> {formatTime(gameTime)}
+                            <br />
+                            • <strong>Achievements:</strong> {Object.values(state.achievements).filter(Boolean).length} unlocked
+                          </div>
+                          <br />
+                          Are you sure you want to reset everything and start over?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-gray-700 hover:bg-gray-600">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={resetGame}
+                          className="bg-red-600 hover:bg-red-500"
+                        >
+                          Yes, Reset Everything
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
+                
                 <div className="mt-4 text-sm text-gray-400 text-center">
                   <p>Your progress automatically saves every 0.5 seconds</p>
                   <p>Game also saves when you switch tabs or close the browser</p>
